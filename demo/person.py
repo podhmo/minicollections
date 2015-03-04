@@ -1,11 +1,11 @@
 # -*- coding:utf-8 -*-
 import logging
 logger = logging.getLogger(__name__)
-from minicollections import value_object
+from minicollections import valueobject
 
 logging.basicConfig(level=logging.DEBUG)
-Person = value_object("Person", [("name", str, "foo"), ("age", int, 0)])
-Berson = value_object("Berson", [("name", str, "foo"), ("age", int, 0)])
+Person = valueobject("Person", [("name", str, "foo"), ("age", int, 0)])
+Berson = valueobject("Berson", [("name", str, "foo"), ("age", int, 0)])
 
 
 class SuperPerson(Person):
@@ -16,7 +16,7 @@ assert Person("foo", "20") != Berson("foo", "20")
 assert SuperPerson("foo", "20") == Person("foo", "20")
 assert Person("foo", "20") == SuperPerson("foo", "20")
 
-Person = value_object("Person", [("name", str, "foo"), ("age", int, 0)])
+Person = valueobject("Person", [("name", str, "foo"), ("age", int, 0)])
 
 """
 @total_ordering

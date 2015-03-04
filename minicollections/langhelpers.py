@@ -7,13 +7,16 @@ logger = logging.getLogger(__name__)
 def as_python_code(fn):
     def wrapper(name, *args, **kwargs):
         m = PythonModule()
-        fn(m, name, *args, **kwargs)
+        names = fn(m, name, *args, **kwargs)
         code = str(m)
         logger.debug("-- as_python_code --\n%s", code)
         # activate python code
         env = {}
         exec(code, globals(), env)
-        return env[name]
+        if len(names) == 1:
+            return env[names[0]]
+        else:
+            return [env[x] for x in names]
     return wrapper
 
 

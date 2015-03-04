@@ -3,7 +3,7 @@ from evilunit import test_target
 import unittest
 
 
-@test_target("minicollections:tagged_tuple")
+@test_target("minicollections:taggedtuple")
 class Tests(unittest.TestCase):
     def test_prepare_named_tuple_is_just_tuple(self):
         from collections import namedtuple
