@@ -37,7 +37,7 @@ def producttype(m, name, doubles):
             m.stmt("name = self.__class__.__name__")
             args = ", ".join("{name}={{self.{name}!r}}".format(name=name) for name in names)
             m.return_("'<{{}}({}) at {{}}>'.format(name, self=self, id=hex(id(self)))".format(args))
-    return [name]
+    return name
 
 
 @as_python_code
@@ -59,7 +59,9 @@ def sumtype(m, typename, definitions):
                     with m.if_("ob.__class__.__name__ == {!r}".format(clsname)):
                         m.return_("dispatch_class.{}(ob, *args, **kwargs)".format(clsname))
                 with m.else_():
-                    m.stmt("raise Exception('dispatch error {!r}() is not supported'.format(ob.__class__.__name__))")
+                    m.stmt(
+                        "raise Exception('dispatch error {!r}() is not supported'.format(ob.__class__.__name__))"
+                    )
             for clsname, _ in definitions:
                 m.stmt("assert hasattr(dispatch_class, {!r})".format(clsname))
             m.return_("_match")
@@ -83,7 +85,9 @@ def sumtype(m, typename, definitions):
             with m.method("__repr__"):
                 m.stmt("name = self.__class__.__name__")
                 args = ", ".join("{name}={{self.{name}!r}}".format(name=name) for name in names)
-                m.return_("'<{{}} {} at {{id}}>'.format(name, self=self, id=hex(id(self)))".format(args))
+                m.return_(
+                    "'<{{}} {} at {{id}}>'.format(name, self=self, id=hex(id(self)))".format(args)
+                )
     return [typename] + [d[0] for d in definitions]
 
 
@@ -107,11 +111,16 @@ def valueobject(m, name, triples):
                 else:
                     fmt = "self.{name} = {convertor}({name}) if {name} else {default!r}"
                 m.stmt(fmt.format(name=name, convertor=convertor.__name__, default=default))
+            if not triples:
+                m.stmt("pass")
 
         m.stmt("__slots__ = ({})", ", ".join(repr(name) for name in names))
 
         with m.method("__hash__"):
-            m.return_("hash('@'.join(map(repr, ({}))))".format(", ".join("self.{}".format(name) for name in names)))
+            m.return_(
+                "hash('@'.join(map(repr, ({}))))".
+                format(", ".join("self.{}".format(name) for name in names))
+            )
 
         with m.method("__gt__", "other"):
             for name in names:
@@ -121,7 +130,7 @@ def valueobject(m, name, triples):
 
         with m.method("__eq__", "other"):
             with m.if_("not isinstance(other, self.__class__)"):
-                    m.return_("False")
+                m.return_("False")
             for name in names:
                 with m.if_("self.{name} != other.{name}".format(name=name)):
                     m.return_("False")
@@ -131,4 +140,14 @@ def valueobject(m, name, triples):
             m.stmt("name = self.__class__.__name__")
             args = ", ".join("{name}={{self.{name}!r}}".format(name=name) for name in names)
             m.return_("'{{}}({})'.format(name, self=self)".format(args))
-    return [name]
+    return name
+
+
+@as_python_code
+def enum(m, name, values):
+    m.from_("enum", "Enum")
+    values = [v.strip(" ") for v in values.split(" ")]
+    with m.class_(name, "Enum"):
+        for i, v in enumerate(values):
+            m.stmt("{} = {}".format(v, i))
+    return name
